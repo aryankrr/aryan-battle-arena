@@ -67,10 +67,3 @@
 
 
 ---
-
-## ⚙️ Local Installation & Setup
-
-### 1. Clone the repository
-```bash
-git clone [https://github.com/aryankrr/aryan-battle-arena.git](https://github.com/aryankrr/aryan-battle-arena.git)
-cd aryan-battle-arena
