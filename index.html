@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>⚔️ ARYAN BATTLE ARENA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background: #04060b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 900px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #ff9900;
+            text-shadow: 0 0 16px rgba(255, 153, 0, 0.7);
+        }
+        .controls-hint {
+            font-size: 13px;
+            color: #94a3b8;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+        .controls-hint span { color: #38bdf8; font-weight: bold; }
+        #canvas-box {
+            position: relative;
+            border: 2px solid #ff9900;
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(255, 153, 0, 0.25), inset 0 0 50px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            background: radial-gradient(circle at center, #101524 0%, #05070e 100%);
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">⚔️ ARYAN BATTLE ARENA</div>
+        <div class="controls-hint">
+            <span>WASD</span> Move &bull; <span>Mouse</span> Aim &bull; <span>Click</span> Fire &bull; <span>Pick Power-ups</span>
+        </div>
+    </div>
+
+    <div id="canvas-box">
+        <canvas id="gameCanvas" width="900" height="540"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const playerId = "p_" + Math.floor(Math.random() * 10000);
+        const ws = new WebSocket(`ws://localhost:8000/ws/${playerId}`);
+
+        let pos = { x: 450, y: 270 };
+        let angle = 0;
+        let keys = {};
+        let gameState = { players: {}, bullets: [], powerups: [], barriers: [] };
+        let particles = [];
+        let screenShake = 0;
+        let lastHealth = 100;
+
+        window.addEventListener("keydown", (e) => { 
+            keys[e.key.toLowerCase()] = true; 
+            if (e.code === "Space") shoot();
+        });
+        window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
+
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            angle = Math.atan2(e.clientY - rect.top - pos.y, e.clientX - rect.left - pos.x);
+        });
+
+        canvas.addEventListener("mousedown", () => shoot());
+
+        function shoot() {
+            if (ws.readyState === WebSocket.OPEN) {
+                createSparks(pos.x + Math.cos(angle) * 28, pos.y + Math.sin(angle) * 28, angle, "#ff9900", 6);
+                ws.send(JSON.stringify({
+                    type: "shoot",
+                    x: pos.x + Math.cos(angle) * 28,
+                    y: pos.y + Math.sin(angle) * 28,
+                    angle: angle
+                }));
+            }
+        }
+
+        function createSparks(x, y, baseAngle, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const spread = (Math.random() - 0.5) * 1.5;
+                const speed = Math.random() * 5 + 2;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(baseAngle + spread) * speed,
+                    vy: Math.sin(baseAngle + spread) * speed,
+                    color: color,
+                    life: 1.0,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        // 60 FPS Movement Loop
+        setInterval(() => {
+            const speed = 4;
+            if (keys["w"] || keys["arrowup"]) pos.y = Math.max(30, pos.y - speed);
+            if (keys["s"] || keys["arrowdown"]) pos.y = Math.min(canvas.height - 30, pos.y + speed);
+            if (keys["a"] || keys["arrowleft"]) pos.x = Math.max(30, pos.x - speed);
+            if (keys["d"] || keys["arrowright"]) pos.x = Math.min(canvas.width - 30, pos.x + speed);
+
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "move", x: pos.x, y: pos.y, angle: angle }));
+            }
+        }, 1000 / 60);
+
+        ws.onmessage = (event) => {
+            gameState = JSON.parse(event.data);
+            if (gameState.players[playerId]) {
+                const currentHealth = gameState.players[playerId].health;
+                if (currentHealth < lastHealth) {
+                    screenShake = 7;
+                    createSparks(pos.x, pos.y, Math.random() * Math.PI * 2, "#ff0044", 12);
+                }
+                lastHealth = currentHealth;
+            }
+        };
+
+        function drawBackground() {
+            ctx.strokeStyle = "rgba(255, 153, 0, 0.05)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+        }
+
+        function drawTank(p, isMe) {
+            const baseColor = isMe ? "#ff9900" : "#00f0ff";
+            const armorColor = isMe ? "#4d2e00" : "#003b47";
+            const lvl = p.level || 1;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+
+            // Treads
+            ctx.fillStyle = "#111827";
+            ctx.strokeStyle = "#374151";
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(-22, -24, 44, 11);
+            ctx.strokeRect(-22, -24, 44, 11);
+            ctx.fillRect(-22, 13, 44, 11);
+            ctx.strokeRect(-22, 13, 44, 11);
+
+            // Hull
+            ctx.fillStyle = armorColor;
+            ctx.strokeStyle = baseColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(-18, -15, 36, 30, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Turret & Cannon
+            ctx.rotate(p.angle);
+            ctx.fillStyle = "#1e293b";
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Multi-barrel scaling by level
+            ctx.fillStyle = "#f8fafc";
+            if (lvl >= 3) {
+                ctx.fillRect(0, -6, 26, 4);
+                ctx.fillRect(0, 2, 26, 4);
+            } else {
+                ctx.fillRect(0, -4, 24, 8);
+            }
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(20, -5, 6, 10);
+            ctx.restore();
+
+            // Health & Level HUD
+            const barW = 50;
+            ctx.fillStyle = "rgba(0,0,0,0.8)";
+            ctx.fillRect(p.x - barW/2, p.y - 36, barW, 6);
+            ctx.fillStyle = p.health > 40 ? "#00ff88" : "#ff0044";
+            ctx.fillRect(p.x - barW/2, p.y - 36, (p.health / 100) * barW, 6);
+
+            ctx.fillStyle = "#cbd5e1";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`${isMe ? "COMMANDER ARYAN" : p.name} [LVL ${lvl}]`, p.x, p.y - 44);
+        }
+
+        function render() {
+            ctx.save();
+            if (screenShake > 0) {
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+                screenShake *= 0.85;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+
+            // Tactical Barriers
+            for (let br of (gameState.barriers || [])) {
+                ctx.fillStyle = "rgba(30, 41, 59, 0.9)";
+                ctx.strokeStyle = "#38bdf8";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(br.x, br.y, br.w, br.h, 8);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Power-ups
+            for (let pw of (gameState.powerups || [])) {
+                ctx.save();
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = pw.type === "heal" ? "#00ff88" : "#eab308";
+                ctx.fillStyle = pw.type === "heal" ? "#00ff88" : "#eab308";
+                ctx.beginPath();
+                ctx.arc(pw.x, pw.y, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Laser Bullets
+            for (let b of gameState.bullets) {
+                ctx.save();
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = "#ff9900";
+                ctx.fillStyle = "#ff9900";
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const pt = particles[i];
+                pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.04;
+                if (pt.life <= 0) { particles.splice(i, 1); continue; }
+                ctx.save();
+                ctx.globalAlpha = pt.life;
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Tanks
+            for (let id in gameState.players) {
+                drawTank(gameState.players[id], id === playerId);
+            }
+
+            // Glass Leaderboard HUD
+            ctx.fillStyle = "rgba(10, 15, 25, 0.85)";
+            ctx.strokeStyle = "#ff9900";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(canvas.width - 180, 15, 165, 110, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#ff9900";
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText("⚡ COMBAT RANKS", canvas.width - 165, 36);
+
+            let rankY = 58;
+            const sorted = Object.values(gameState.players).sort((a, b) => b.score - a.score).slice(0, 3);
+            sorted.forEach((p, idx) => {
+                ctx.fillStyle = idx === 0 ? "#ffd700" : "#cbd5e1";
+                ctx.font = "11px sans-serif";
+                ctx.fillText(`${idx + 1}. ${p.name.slice(0, 8)} [L${p.level}]: ${p.score}`, canvas.width - 165, rankY);
+                rankY += 20;
+            });
+
+            ctx.restore();
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>
