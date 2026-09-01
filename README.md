@@ -1,11 +1,10 @@
-<<<<<<< Updated upstream
 <div align="center">
 
 # ⚔️ ARYAN BATTLE ARENA
 ### *High-Concurrency 2D Real-Time Multiplayer Combat Engine*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://websockets.readthedocs.io)
 [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas%202D-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 
@@ -48,59 +47,3 @@
 | **Power-ups** | `Collision Pickup` | Green: +35 Health / Yellow: +60 XP Boost |
 
 ---
-
-## 🏗️ System Architecture
-┌────────────────────────┐         ┌────────────────────────┐
-│   Player 1 (Browser)   │         │   Player 2 (Browser)   │
-└───────────┬────────────┘         └───────────┬────────────┘
-│ WebSocket Inputs                 │ WebSocket Inputs
-▼                                  ▼
-┌───────────────────────────────────────────────────────────┐
-│               FastAPI WebSocket Server Engine             │
-│  • Concurrency Management   • Laser Trajectory & Hitboxes │
-│  • Tactical Barrier Checks  • Dynamic Level & XP State    │
-└───────────────────────────┬───────────────────────────────┘
-│
-▼ State Broadcast (60 Ticks/sec)
-┌───────────────────────────────┐
-│ Client HTML5 Canvas Rendering │
-└───────────────────────────────┘
-
-
----
-=======
-# ⚔️ Aryan Battle Arena - 2D Real-Time Combat Game
-
-A high-concurrency, low-latency 2D multiplayer combat arena running directly in the browser. Built with **Python (FastAPI)** and **WebSockets** for real-time bidirectional state synchronization, paired with a custom **HTML5 Canvas** rendering engine.
-
----
-
-## 🚀 Key Features
-* **Sub-30ms Real-Time State Sync:** Authoritative server-side loop in Python managing player positions, weapon trajectories, obstacle collisions, and health states over WebSockets.
-* **Combat & Level Progression System:** Real-time XP tracking, dynamic multi-barrel upgrades (Level 1 to Level 5), and floating health indicators.
-* **Tactical Arenas & Power-ups:** Destructible barriers and real-time spawning power-ups (Health Kits & XP Overcharges).
-* **Cyberpunk Visual Engine:** 60 FPS rendering pipeline with mouse-guided 360° turret rotation, dynamic screen recoil/shake, and particle explosion physics.
-
----
-
-## 🛠️ Tech Stack
-* **Backend:** Python 3.x, FastAPI, Uvicorn, WebSockets (AsyncIO)
-* **Frontend:** JavaScript (ES6+), HTML5 Canvas API, CSS3
-* **Protocol:** Full-Duplex WebSockets (`ws://`)
-
----
-
-## 🕹️ Controls
-* **Move:** `W`, `A`, `S`, `D` or `Arrow Keys`
-* **Aim:** `Mouse Cursor` (360° Rotation)
-* **Fire:** `Left Click` or `Spacebar`
-
----
-
-## ⚙️ Local Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/aryankrr/aryan-battle-arena.git](https://github.com/aryankrr/aryan-battle-arena.git)
-   cd realtime-multiplayer-arena
->>>>>>> Stashed changes
