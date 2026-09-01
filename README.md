@@ -3,14 +3,13 @@
 # ⚔️ ARYAN BATTLE ARENA
 ### *High-Concurrency 2D Real-Time Multiplayer Combat Engine*
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://websockets.readthedocs.io)
 [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas%202D-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 <p align="center">
-  A low-latency, browser-based 2D multiplayer combat arena featuring authoritative server physics, dynamic level-ups, vector aiming, power-up pickups, and a neon sci-fi HUD.
+  A high-performance, low-latency 2D browser-based multiplayer combat arena featuring authoritative server physics, dynamic level-ups, vector aiming, power-up pickups, and a cyberpunk HUD.
 </p>
 
 </div>
@@ -31,11 +30,47 @@
 
 | Layer | Technology / Protocol | Purpose |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.x, FastAPI, Uvicorn | ASGI server, event loop, and state management |
-| **Networking** | WebSockets (`ws://`) | Full-duplex real-time client-server communication |
-| **Frontend Engine** | JavaScript (ES6+), HTML5 Canvas API | 60 FPS graphics pipeline and user input handling |
-| **Styling & UI** | CSS3 (Cyberpunk Neon Theme) | Glassmorphism leaderboard HUD and responsive layout |
+| **Backend Engine** | Python 3.x, FastAPI, Uvicorn | High-concurrency ASGI server, event loop, and state broadcast |
+| **Networking** | WebSockets (`ws://`) | Full-duplex bidirectional real-time client-server communication |
+| **Graphics Engine** | JavaScript (ES6+), HTML5 Canvas API | 60 FPS hardware-accelerated 2D rendering pipeline |
+| **Interface / UI** | CSS3 (Cyberpunk Glassmorphism) | Dynamic HUD, responsive layout, and tactical scoreboard |
 
 ---
 
-## 🕹️ Controls
+## 🕹️ Controls & Mechanics
+
+| Action | Control Key / Input | Details |
+| :--- | :--- | :--- |
+| **Movement** | `W`, `A`, `S`, `D` / Arrow Keys | 8-directional tactical tank navigation |
+| **Aiming** | `Mouse Cursor` | 360-degree turret orientation tracking |
+| **Primary Cannon**| `Left Mouse Click` / `Spacebar` | Fires high-velocity plasma projectiles |
+| **Power-ups** | `Collision Pickup` | Green: +35 Health / Yellow: +60 XP Boost |
+
+---
+
+## 🏗️ System Architecture
+┌────────────────────────┐         ┌────────────────────────┐
+│   Player 1 (Browser)   │         │   Player 2 (Browser)   │
+└───────────┬────────────┘         └───────────┬────────────┘
+│ WebSocket Inputs                 │ WebSocket Inputs
+▼                                  ▼
+┌───────────────────────────────────────────────────────────┐
+│               FastAPI WebSocket Server Engine             │
+│  • Concurrency Management   • Laser Trajectory & Hitboxes │
+│  • Tactical Barrier Checks  • Dynamic Level & XP State    │
+└───────────────────────────┬───────────────────────────────┘
+│
+▼ State Broadcast (60 Ticks/sec)
+┌───────────────────────────────┐
+│ Client HTML5 Canvas Rendering │
+└───────────────────────────────┘
+
+
+---
+
+## ⚙️ Local Installation & Setup
+
+### 1. Clone the repository
+```bash
+git clone [https://github.com/aryankrr/aryan-battle-arena.git](https://github.com/aryankrr/aryan-battle-arena.git)
+cd aryan-battle-arena
